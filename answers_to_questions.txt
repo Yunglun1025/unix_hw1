@@ -1,0 +1,148 @@
+Question 1 (lines 20-23): "How do I 'remove it from argv'?"
+   #Since we're done processing this argument, remove it from argv, but not if
+   #it's a flag that starts with a "-" (but remember that Cshell if-conditions
+   #have a problem to overcome, when testing things that start with a "-").
+   if ( ____________ ) set ______________
+
+Answer 1: "If you turn an argv element to into '', then, when you show the
+          full argv array (see line 74), this element will just be a space."
+
+
+Question 2 (lines 34-35): "What is msed2?"
+#Create a sed file from the part of this file below the exit:
+sed ___________ < msed2 > t7
+
+Answer 2:  "That is a typo. It should say: 'sed ___________ < msed > t7'."
+
+
+Question 3 (lines 59-63): "So I understand why you'll need a conditional jump
+           to a label in order to achieve the flag's resetting. That makes
+           sense, and it is the behavior that is needed for 'F'.
+           But what about 'f'? Why does it need a label?"
+   #So now we take the single line $x and clean it up. The $-# will turn into
+   #the number $z. Also to fix: make the branches used for "f"/"F" unique, by
+   #adding a counter number to the end of whateven branch label may be in #x.
+   #(See footnote 4 of the README file, for details on handling "f"/"F".)
+   echo $x:q | sed ______________ >> t9
+
+Answer 3:  "You are right. The 'f' does not need a label, so the comment in
+           the template was unclear. Let me revise it:"
+   #So now we take the single line $x and clean it up. The $-# will turn into
+   #the number $z. Also to fix: make the branches used for "F" unique, by
+   #adding a counter number to the end of whateven branch label may be in #x.
+   #(See footnote 4 of the README file, for details on handling "f"/"F".)
+   echo $x:q | sed ______________ >> t9
+
+
+Question 4 (lines 65-66): "Explain how the counter is used for the labels."
+   #Increase the counter used for the branch labels on line 63, above:
+   @ cnt = $cnt + 1
+
+Answer 4:  "Sed branch-target labels must start with a letter (or a '_').
+           They cannot start with a number. The $cnt number is not meant to
+           replace the label (because then the label would illegally start
+           with a number). Instead, $cnt is appended to the current label."
+
+
+Question 5 (lines 80-83): "What about "/"? You didn't mention that."
+#The section below here puts individual sed commands on individual lines.
+#The issue is to clean up "y", "s", or "\" commands, because these commands
+#can have ";" inside them - and if they did have ";", then these ";" will have
+#caused line separations on Line 32, above. We need to recogize if the current
+
+Answer 5:  Yes, also "/". The point is: any commands that could have ";"
+           that have caused the command to geet spread across lines.
+
+
+Question 6 (lines 87-88): "Does sed really support the "\;a;b" syntax?"
+#Note: All of the following should get pulled into one line each:
+#      s/;/;/  or  s;a;b;  or  y;,\;;\;,;  or  \;a;b;  or  /;;/p   or   etc.
+
+Answer 6: "Yes it does. Try it for yourself:
+                        echo a,only line 2 prints|tr , \\n|sed -n '\;a;b;p'
+
+
+Question 7 (line 89): "What about ';' inside of '[...]'?"
+89-#Note: But, to keep things simple, we won't worry about: "[;]".
+
+Answer 7:  This is a confusion about what it means to 'not worry about'.
+           The answer to that is that it means: 'msed doesn't need to consider
+           cases where their is a ";" included as one of the characters inside
+           of any "[...]" that might occur within some regular expression the
+           user might provide within their msed program.'
+           Or, to say it more simply, 'not worrying about it' means that: 'The
+           TA will never test a case where their is a ";" with a "[...]". The
+           user will never use such a regular expression within any msed code
+           that the user provides in argv[1].'
+
+
+Question 8 (lines 92-97): "Do these need to be 6 lines?"
+_________
+_________
+    .
+    .
+    .
+_________
+
+Answer 8:  "No, you may use any number of lines. That's what the '...' means."
+
+
+Question 9 (also about lines 92-97): "Is it OK if some ';' cases don't work?"
+
+Answer 9:  "No, that is not OK (with the exception of '[;]', discussed above).
+           For students who are struggling to handle all ';' cases, here are
+           some key insights that might clear things up:
+             1. The goal of the lines 92-97 is to pull single sed commands
+                onto single lines. (This is why the comment on line 102 says
+                that, by that point "whole sed commands" are on lines.)
+             2. If that is the goal of lines 92-97, that is what these lines
+                must do. (But remember that I mean lines 92-97 of the template
+                file, not lines 92-97 of your msed file-- and this distinction
+                is necessary because of the "..." on lines 94-96, which allows
+                your implementation of lines 92-97 to be as many lines as you
+                want.
+             3. If you're saying that you can't get it to work right (ie, that
+                there are some cases where you still have a command spread
+                across several lines), then remember: sed is a programming
+                language. You can write code (you can even branch to create
+                a loop). So you can see what cases aren't working for you,
+                and fix them with code targeted to those cases, and which only
+                gets applied conditionally, in those problematic cases.
+             4. I think the heart of the issue here was to not realizing that
+                whatever symbol comes after a 'y' or 's' command must repeat
+                three times on the line. (And if it doesn't then that means
+                you have to combine lines until it does.) Similarly, for '\',
+                the symbol after it must repeat once.
+                Hint: back referencing is the way to test for repeats.
+
+
+Question 10 (lines 103-108): "I don't understand what these lines do."
+#Complete the lines below:
+s,^Z,_____________,
+s,^C\(.*\),_____________,
+s,^W\(.*\),{____________},
+s,^D,{_____________},
+s,^f,_____________,
+
+Answer 10: "I think the confusion is that you are struggling with the idea
+            that you are currently writing sed code that, when run, will also
+            produce sed code.
+            As I was explaining this to the student, it seemed that the idea
+            just wasn't getting understood, and so I decided to just give you
+            the answer for one on the easy ones of these lines -- and when you
+            see the answer, any confusion about what we're doing is clarified.
+            So here is 'Z' (line 104): 's,^Z,s/[^\n]*\n\{,1\}//,'
+            Get it now? A 'Z' command in the user's provided msed program will
+            become a 's/[^\n]*\n\{,1\}//' command in the 't7' file.
+            Note 1: What if the user gave a broken 'Z' command with illegal
+                    text after it (eg '...;Zap;...', not '...;Z;...')?
+                    Well, in that case, their illegal msed program would 
+                    produce an illegal t7 sed file. So: there is no problem;
+                    we just have a case where a program with a bug has a bug.
+                    The user cannot expect proper behavior from broken code.
+                    Too vague? How about this: The TA won't test broken code.
+            Note 2: As I wrote the answer, 's,^Z,s/[^\n]*\n\{,1\}//,' you may
+                    have noticed that this command will have the side effect
+                    of setting the flag. That is OK. For this homework, we'll
+                    just accept such side effects as a feature of the msed
+                    programming language.
